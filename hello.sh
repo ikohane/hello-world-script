@@ -70,6 +70,5 @@ echo "</div></div></body></html>" >> "$html_file"
 # Display the path to the HTML file
 echo -e "\nHeadlines have been saved to: $html_file"
 
-# Open the file in the OpenHands browser
-echo -e "\nOpening news in browser..."
-python3 view_news.py
+# The HTML file is now available at: /workspace/hello-world-script/news.html
+echo -e "\nTo view the news in a formatted page, look for the browser tab in the OpenHands interface"
