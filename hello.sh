@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Install required Python packages if not already installed
+pip install requests beautifulsoup4 >/dev/null 2>&1
+
 # Display greeting and time
 echo "Hello Boston"
 current_time=$(TZ="America/New_York" date "+%I:%M %p")
@@ -9,7 +12,8 @@ echo "Current time in Boston: $current_time"
 html_file=$(mktemp)
 
 # Start the HTML file
-echo "<html>
+cat > "$html_file" << EOF
+<html>
 <head>
     <style>
         body {
@@ -32,8 +36,9 @@ echo "<html>
         }
         .headline {
             margin: 15px 0;
-            padding: 10px;
+            padding: 15px;
             border-bottom: 1px solid #eee;
+            line-height: 1.4;
         }
         .headline:hover {
             background-color: #f8f8f8;
@@ -41,6 +46,7 @@ echo "<html>
         .time {
             color: #666;
             margin-bottom: 20px;
+            font-style: italic;
         }
     </style>
 </head>
@@ -48,23 +54,21 @@ echo "<html>
     <div class='container'>
         <h2>Top Headlines</h2>
         <div class='time'>Boston Time: $current_time</div>
-        <div class='headlines'>" > "$html_file"
+        <div class='headlines'>
+EOF
 
-# Fetch headlines using curl and parse them
-curl -s -A "Mozilla/5.0" "https://news.google.com/rss" | \
-    grep -E '<title>.*</title>' | \
-    sed -e 's/<title>//' -e 's/<\/title>//' -e 's/&quot;/"/g' -e 's/&amp;/\&/g' | \
-    tail -n +2 | \
-    head -n 10 | \
-    while IFS= read -r headline; do
-        echo "<div class='headline'>$headline</div>" >> "$html_file"
-    done
+# Get headlines using Python script and add them to HTML
+echo -e "\nHeadlines:"
+python3 get_news.py | while IFS= read -r headline; do
+    echo "$headline"
+    echo "<div class='headline'>$headline</div>" >> "$html_file"
+done
 
 # Close the HTML file
 echo "</div></div></body></html>" >> "$html_file"
 
 # Display the path to the HTML file
-echo "Headlines have been saved to: $html_file"
+echo -e "\nHeadlines have been saved to: $html_file"
 
 # Try to open the file in a browser if possible
 if command -v xdg-open > /dev/null; then
@@ -72,7 +76,3 @@ if command -v xdg-open > /dev/null; then
 elif command -v open > /dev/null; then
     open "$html_file"
 fi
-
-# Also display headlines in terminal
-echo -e "\nHeadlines:"
-cat "$html_file" | grep -o '<div class="headline">.*</div>' | sed 's/<div class="headline">\(.*\)<\/div>/\1/'
