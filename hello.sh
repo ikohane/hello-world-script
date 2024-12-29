@@ -11,6 +11,16 @@ echo "Current time in Boston: $current_time"
 # Create HTML file in the current directory
 html_file="news.html"
 
+# Get Tesla information
+tesla_info=$(python3 get_news.py | head -n 1)
+tesla_price=$(echo $tesla_info | python3 -c "import sys, json; print(json.loads(sys.stdin.read())['price'])")
+tesla_shares=$(echo $tesla_info | python3 -c "import sys, json; print(json.loads(sys.stdin.read())['musk_shares'])")
+tesla_value=$(echo $tesla_info | python3 -c "import sys, json; print(json.loads(sys.stdin.read())['musk_value'])")
+
+# Format numbers with commas
+tesla_shares_formatted=$(echo $tesla_shares | sed ':a;s/\B[0-9]\{3\}\>/,&/;ta')
+tesla_value_formatted=$(echo $tesla_value | python3 -c "import sys; print('${:,.2f}'.format(float(sys.stdin.read())))")
+
 # Start the HTML file
 cat > "$html_file" << EOF
 <html>
@@ -48,18 +58,45 @@ cat > "$html_file" << EOF
             margin-bottom: 20px;
             font-style: italic;
         }
+        .tesla-info {
+            background-color: #f8f8f8;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .tesla-price {
+            font-size: 48px;
+            color: #2f2f2f;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .tesla-shares {
+            font-size: 24px;
+            color: #444;
+            margin-bottom: 10px;
+        }
+        .tesla-value {
+            font-size: 28px;
+            color: #0066cc;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <div class='container'>
-        <h2>Top Headlines</h2>
         <div class='time'>Boston Time: $current_time</div>
+        <div class='tesla-info'>
+            <div class='tesla-price'>TSLA: \$$tesla_price</div>
+            <div class='tesla-shares'>Elon Musk's Estimated Shares: $tesla_shares_formatted</div>
+            <div class='tesla-value'>Total Value: \$$tesla_value_formatted</div>
+        </div>
+        <h2>Top Headlines</h2>
         <div class='headlines'>
 EOF
 
 # Get headlines using Python script and add them to HTML
 echo -e "\nHeadlines:"
-python3 get_news.py | while IFS= read -r headline; do
+python3 get_news.py | sed '1,/---HEADLINES---/d' | while IFS= read -r headline; do
     echo "$headline"
     echo "<div class='headline'>$headline</div>" >> "$html_file"
 done
