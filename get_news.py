@@ -1,26 +1,15 @@
-import requests
-from bs4 import BeautifulSoup
+import feedparser
 import sys
 
 def get_headlines():
     try:
-        # Use a recent User-Agent
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
+        # Use Google News RSS feed
+        feed = feedparser.parse("https://news.google.com/news/rss")
         
-        # Get Google News page
-        response = requests.get('https://news.google.com', headers=headers)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        # Find article headlines
-        articles = soup.find_all('article', limit=10)
+        # Get the top 10 headlines
         headlines = []
-        
-        for article in articles:
-            headline = article.find('h3')
-            if headline:
-                headlines.append(headline.get_text().strip())
+        for entry in feed.entries[:10]:
+            headlines.append(entry.title)
         
         return headlines
     except Exception as e:

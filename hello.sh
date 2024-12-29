@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Install required Python packages if not already installed
-pip install requests beautifulsoup4 >/dev/null 2>&1
+pip install feedparser >/dev/null 2>&1
 
 # Display greeting and time
 echo "Hello Boston"
