@@ -8,8 +8,8 @@ echo "Hello Boston"
 current_time=$(TZ="America/New_York" date "+%I:%M %p")
 echo "Current time in Boston: $current_time"
 
-# Create a temporary file for the HTML output
-html_file=$(mktemp)
+# Create HTML file in the current directory
+html_file="news.html"
 
 # Start the HTML file
 cat > "$html_file" << EOF
@@ -70,9 +70,6 @@ echo "</div></div></body></html>" >> "$html_file"
 # Display the path to the HTML file
 echo -e "\nHeadlines have been saved to: $html_file"
 
-# Try to open the file in a browser if possible
-if command -v xdg-open > /dev/null; then
-    xdg-open "$html_file"
-elif command -v open > /dev/null; then
-    open "$html_file"
-fi
+# Open the file in the OpenHands browser
+echo -e "\nOpening news in browser..."
+python3 view_news.py
