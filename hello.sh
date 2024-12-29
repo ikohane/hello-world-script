@@ -13,13 +13,11 @@ html_file="news.html"
 
 # Get Tesla information
 tesla_info=$(python3 get_news.py | head -n 1)
-tesla_price=$(echo $tesla_info | python3 -c "import sys, json; print(json.loads(sys.stdin.read())['price'])")
-tesla_shares=$(echo $tesla_info | python3 -c "import sys, json; print(json.loads(sys.stdin.read())['musk_shares'])")
-tesla_value=$(echo $tesla_info | python3 -c "import sys, json; print(json.loads(sys.stdin.read())['musk_value'])")
-
-# Format numbers with commas
-tesla_shares_formatted=$(echo $tesla_shares | sed ':a;s/\B[0-9]\{3\}\>/,&/;ta')
-tesla_value_formatted=$(echo $tesla_value | python3 -c "import sys; print('${:,.2f}'.format(float(sys.stdin.read())))")
+tesla_price=$(echo "$tesla_info" | python3 -c "import sys, json; print('{:,.2f}'.format(json.loads(sys.stdin.read())['price']))")
+tesla_direct=$(echo "$tesla_info" | python3 -c "import sys, json; print('{:,}'.format(json.loads(sys.stdin.read())['direct_shares']))")
+tesla_trust=$(echo "$tesla_info" | python3 -c "import sys, json; print('{:,}'.format(json.loads(sys.stdin.read())['trust_shares']))")
+tesla_total=$(echo "$tesla_info" | python3 -c "import sys, json; print('{:,}'.format(json.loads(sys.stdin.read())['total_shares']))")
+tesla_value=$(echo "$tesla_info" | python3 -c "import sys, json; print('{:,.2f}'.format(json.loads(sys.stdin.read())['total_value']))")
 
 # Start the HTML file
 cat > "$html_file" << EOF
@@ -73,7 +71,17 @@ cat > "$html_file" << EOF
         .tesla-shares {
             font-size: 24px;
             color: #444;
-            margin-bottom: 10px;
+            margin: 20px 0;
+        }
+        .tesla-shares ul {
+            margin: 10px 0;
+            padding-left: 20px;
+            list-style-type: none;
+        }
+        .tesla-shares li {
+            font-size: 20px;
+            margin: 8px 0;
+            color: #555;
         }
         .tesla-value {
             font-size: 28px;
@@ -87,8 +95,15 @@ cat > "$html_file" << EOF
         <div class='time'>Boston Time: $current_time</div>
         <div class='tesla-info'>
             <div class='tesla-price'>TSLA: \$$tesla_price</div>
-            <div class='tesla-shares'>Elon Musk's Estimated Shares: $tesla_shares_formatted</div>
-            <div class='tesla-value'>Total Value: \$$tesla_value_formatted</div>
+            <div class='tesla-shares'>
+                Elon Musk's Tesla Shares:
+                <ul>
+                    <li>Direct Ownership: $tesla_direct shares</li>
+                    <li>Trust Ownership: $tesla_trust shares</li>
+                    <li>Total Ownership: $tesla_total shares</li>
+                </ul>
+            </div>
+            <div class='tesla-value'>Total Value: \$$tesla_value</div>
         </div>
         <h2>Top Headlines</h2>
         <div class='headlines'>

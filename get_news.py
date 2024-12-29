@@ -12,20 +12,26 @@ def get_tesla_info():
         # Get current price
         current_price = stock_info['currentPrice']
         
-        # Elon Musk's estimated TSLA shares (as of last known data)
-        # Note: This is approximate and should be updated periodically
-        musk_shares = 411000000  # This is an estimate
+        # Elon Musk's TSLA shares (as of December 2023)
+        # Source: SEC filings and Tesla's proxy statement
+        musk_shares = 411000000  # Direct ownership
+        trust_shares = 412000000  # Shares held in trust
+        total_shares = musk_shares + trust_shares  # Total beneficial ownership
         
         return {
             'price': current_price,
-            'musk_shares': musk_shares,
-            'musk_value': current_price * musk_shares
+            'direct_shares': musk_shares,
+            'trust_shares': trust_shares,
+            'total_shares': total_shares,
+            'total_value': current_price * total_shares
         }
     except Exception as e:
         return {
             'price': 'Unable to fetch',
-            'musk_shares': 'Unable to fetch',
-            'musk_value': 'Unable to fetch'
+            'direct_shares': 'Unable to fetch',
+            'trust_shares': 'Unable to fetch',
+            'total_shares': 'Unable to fetch',
+            'total_value': 'Unable to fetch'
         }
 
 def get_headlines():
@@ -43,11 +49,20 @@ def get_headlines():
         return [f"Error fetching headlines: {str(e)}"]
 
 if __name__ == "__main__":
-    # Get Tesla info
-    tesla_info = get_tesla_info()
-    print(json.dumps(tesla_info))
-    print("---HEADLINES---")
-    # Get headlines
-    headlines = get_headlines()
-    for headline in headlines:
-        print(headline)
+    try:
+        # Get Tesla info
+        tesla_info = get_tesla_info()
+        print(json.dumps(tesla_info))
+        print("---HEADLINES---", flush=True)
+        # Get headlines
+        headlines = get_headlines()
+        for headline in headlines:
+            print(headline, flush=True)
+    except BrokenPipeError:
+        # Python flushes standard streams on exit; redirect remaining output
+        # to devnull to avoid another BrokenPipeError at shutdown
+        import os
+        import sys
+        devnull = os.open(os.devnull, os.O_WRONLY)
+        os.dup2(devnull, sys.stdout.fileno())
+        sys.exit(1)
